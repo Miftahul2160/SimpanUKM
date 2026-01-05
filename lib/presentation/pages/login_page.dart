@@ -11,6 +11,24 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _nimNoHPController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  void _login() {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Simulasi proses login
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          _isLoading = false;
+        });
+        // Setelah login berhasil, navigasi ke halaman berikutnya
+        // Navigator.pushReplacementNamed(context, '/home');
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,6 +88,28 @@ class _LoginPageState extends State<LoginPage> {
                         }
                         return null;
                       },
+                    ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        minimumSize: Size(
+                          double.infinity,
+                          50,
+                        ), // Membuat tombol selebar mungkin
+                        textStyle: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      onPressed: _isLoading ? null : _login,
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text('Login', style: TextStyle(fontSize: 18)),
                     ),
                 ],
               ),
