@@ -41,13 +41,14 @@ class _LoginPageState extends State<LoginPage> {
               reverse: false,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Image(
-                    image: AssetImage('assets/images/logo_full.png'),
-                    width: 150,
+                    image: AssetImage("assets/images/logo_full.png"),
+                    // width: 150,
                     height: 150,
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 10),
                   Text(
                     'Selamat datang di aplikasi SimpanUKM',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -110,6 +111,19 @@ class _LoginPageState extends State<LoginPage> {
                       child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : Text('Login', style: TextStyle(fontSize: 18)),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      
+                      children: [
+                        Text("Belum punya akun?"),
+                        TextButton(
+                          onPressed: () {
+                            // Navigator.pushNamed(context, '/register');
+                          },
+                          child: Text('Daftar'),
+                        ),
+                      ],
                     ),
                 ],
               ),
