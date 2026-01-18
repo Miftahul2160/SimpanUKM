@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:simpanukm_uas_pam/presentation/pages/admin/dashboard_adminpage.dart';
+import 'package:simpanukm_uas_pam/presentation/pages/register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,8 +26,10 @@ class _LoginPageState extends State<LoginPage> {
         setState(() {
           _isLoading = false;
         });
-        // Setelah login berhasil, navigasi ke halaman berikutnya
-        // Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardAdminPage()),
+        );
       });
     }
   }
@@ -64,12 +68,14 @@ class _LoginPageState extends State<LoginPage> {
                           autovalidateMode: AutovalidateMode.onUserInteraction,
                           keyboardType: TextInputType.name,
                           decoration: const InputDecoration(
-                            labelText: 'NIM/No HP',
+                            labelText: 'NIM/No Handphone',
                             prefixIcon: Icon(Icons.person),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Masukkan NIM/No HP';
+                              return 'Masukkan NIM/No Handphone';
+                            } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
+                              return 'Harus berupa angka';
                             }
                             return null;
                           },
@@ -100,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                         minimumSize: Size(
                           double.infinity,
                           50,
-                        ), // Membuat tombol selebar mungkin
+                        ), 
                         textStyle: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -119,7 +125,11 @@ class _LoginPageState extends State<LoginPage> {
                         Text("Belum punya akun?"),
                         TextButton(
                           onPressed: () {
-                            // Navigator.pushNamed(context, '/register');
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => RegisterPage()),
+                            );
                           },
                           child: Text('Daftar'),
                         ),
