@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:simpanukm_uas_pam/data/services/authen_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -9,30 +10,44 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final GlobalKey<FormState> _globalKey = GlobalKey<FormState>();
-  final TextEditingController _namaController = TextEditingController();
-  final TextEditingController _nikController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nimController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _alamatController = TextEditingController();
   final TextEditingController _noHpController = TextEditingController();
-  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   bool _isLoading = false;
-  void _handleRegister() {
-    if (_globalKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
 
-      // Simulasi proses pendaftaran
-      Future.delayed(const Duration(seconds: 2), () {
-        setState(() {
-          _isLoading = false;
-        });
-        // Setelah pendaftaran berhasil, kembali ke halaman login
-        Navigator.pop(context);
-      });
+  void _handleRegister() async {
+    if (!_globalKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final payload = {
+      "name": _nameController.text,
+      "nim": _nimController.text,
+      "email": _emailController.text,
+      "no_hp": _noHpController.text,
+      "password": _passwordController.text,
+      "role": "user",
+    };
+
+    final res = await AuthService.register(payload);
+
+    setState(() => _isLoading = false);
+
+    if (res['success'] == true) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(res['message'] ?? "Registrasi berhasil")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(res['message'] ?? "Registrasi gagal")),
+      );
     }
   }
 
@@ -65,7 +80,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     // ),
                     SizedBox(height: 10),
                     TextFormField(
-                      controller: _namaController,
+                      controller: _nameController,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       keyboardType: TextInputType.name,
                       decoration: InputDecoration(
@@ -81,18 +96,18 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     SizedBox(height: 10),
                     TextFormField(
-                      controller: _nikController,
+                      controller: _nimController,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: 'NIK',
-                        hintText: 'Masukkan NIK',
+                        labelText: 'NIM',
+                        hintText: 'Masukkan NIM',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'NIK tidak boleh kosong';
-                        } else if (value.length != 16) {
-                          return 'NIK harus terdiri dari 16 digit';
+                          return 'NIM tidak boleh kosong';
+                        } else if (value.length != 10) {
+                          return 'NIM harus terdiri dari 10 digit';
                         }
                         return null;
                       },
@@ -117,22 +132,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
-                    TextFormField(
-                      controller: _alamatController,
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      keyboardType: TextInputType.streetAddress,
-                      decoration: InputDecoration(
-                        labelText: 'Alamat',
-                        hintText: 'Masukkan Alamat',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Alamat tidak boleh kosong';
-                        }
-                        return null;
-                      },
-                    ),
+                    
                     SizedBox(height: 10),
                     TextFormField(
                       controller: _noHpController,
@@ -151,24 +151,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           return 'Format nomor HP tidak valid';
                         } else if (value.length < 10 || value.length > 15) {
                           return 'Nomor HP harus terdiri dari 10-15 digit';
-                        }
-                        return null;
-                      },
-                    ),
-                    SizedBox(height: 10),
-                    TextFormField(
-                      controller: _usernameController,
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      keyboardType: TextInputType.text,
-                      decoration: InputDecoration(
-                        labelText: 'Username',
-                        hintText: 'Masukkan Username',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Username tidak boleh kosong';
-                        } else if (value.length < 6) {
-                          return 'Username harus terdiri dari minimal 6 karakter';
                         }
                         return null;
                       },
@@ -212,7 +194,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     SizedBox(height: 10),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                       backgroundColor: Colors.blueAccent,
+                        backgroundColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -243,7 +225,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         TextButton(
                           onPressed: () {
                             Navigator.pop(context);
-                            // Kembali ke halaman login/mengahpus halaman yang ditumpuk
+                            // Kembali ke halaman login/menghapus halaman yang ditumpuk
                           },
                           child: Text(
                             'Login',

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/borrow.dart';
 
 class BorrowService {
-  static const String baseUrl = "http://localhost/api";
+  static const String baseUrl = "http://127.0.0.1:8000/api";
 
   Future<List<BorrowItem>> getUserBorrows(int userId) async {
     final response =

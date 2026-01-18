@@ -15,7 +15,7 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
   bool isLoading = true;
   String selectedStatus = "all";
 
-  final String baseUrl = "http://10.0.2.2:8000/api";
+  static const baseUrl = "http://127.0.0.1:8000/api"; 
 
   @override
   void initState() {

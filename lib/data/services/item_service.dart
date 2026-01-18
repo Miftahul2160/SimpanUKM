@@ -5,7 +5,7 @@ import '../models/item.dart';
 
 class ItemService {
   // final HttpService httpService;
-  static const String baseUrl = "http://localhost/api";
+  static const String baseUrl = "http://127.0.0.1:8000/api";
   Future<List<Item>> getItems() async {
     final response = await http.get(Uri.parse("$baseUrl/items"));
 
