@@ -110,64 +110,7 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
                       ))
                 ],
               ),
-<<<<<<< HEAD
             ),
-=======
-
-              const SizedBox(height: 24),
-
-              // ===== PENDING LIST =====
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: const [
-                      Icon(Icons.assignment, size: 22),
-                      SizedBox(width: 8),
-                      Text(
-                        'Pengajuan Terbaru',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // TODO: navigate to full list page
-                    },
-                    child: const Text('Lihat Semua'),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-
-              ListView.separated(
-                itemCount: 3,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, index) {
-                  return PendingBorrowCard(
-                    borrowerName: 'Anggota ${index + 1}',
-                    itemName: 'Kamera DSLR',
-                    date: '12 Jan 2026',
-                    onApprove: () {
-                      // TODO: approve API
-                    },
-                    onReject: () {
-                      // TODO: reject API
-                    },
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
->>>>>>> 3cc1ba4657e706f9edf463ce18742d2946696483
     );
   }
 }
