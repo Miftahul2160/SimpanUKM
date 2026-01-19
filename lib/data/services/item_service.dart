@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:simpanukm_uas_pam/data/services/api_service.dart';
 import '../models/item.dart';
@@ -97,7 +97,8 @@ class ItemService {
     String name,
     String location,
     int stock,
-    File? image,
+    Uint8List? imageBytes,
+    String? imageName,
   ) async {
     try {
       final response = await ApiService.multipart(
@@ -107,7 +108,8 @@ class ItemService {
           "location": location,
           "quantity_total": stock.toString(),
         },
-        image,
+        imageBytes,
+        imageName,
       );
 
       return response != null;
@@ -122,7 +124,8 @@ class ItemService {
     String name,
     String location,
     int stock,
-    File? image,
+    Uint8List? imageBytes,
+    String? imageName,
   ) async {
     try {
       final response = await ApiService.multipart(
@@ -132,7 +135,8 @@ class ItemService {
           "location": location,
           "quantity_total": stock.toString(),
         },
-        image,
+        imageBytes,
+        imageName,
         method: "PUT",
       );
 

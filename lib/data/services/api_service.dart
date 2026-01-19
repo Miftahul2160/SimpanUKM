@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -83,7 +83,8 @@ class ApiService {
   static Future<dynamic> multipart(
     String endpoint,
     Map<String, dynamic> data,
-    File? file, {
+    Uint8List? fileBytes,
+    String? fileName, {
     String method = "POST",
   }) async {
     try {
@@ -95,9 +96,9 @@ class ApiService {
       });
       
       // Add file
-      if (file != null) {
+      if (fileBytes != null && fileName != null) {
         request.files.add(
-          await http.MultipartFile.fromPath('photo', file.path),
+          http.MultipartFile.fromBytes('photo', fileBytes, filename: fileName),
         );
       }
       

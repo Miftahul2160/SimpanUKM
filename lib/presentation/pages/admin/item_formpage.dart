@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:simpanukm_uas_pam/data/models/item.dart';
 import 'package:simpanukm_uas_pam/data/services/item_service.dart';
 
@@ -20,7 +20,8 @@ class _ItemFormPageState extends State<ItemFormPage> {
   late TextEditingController locationController;
   late TextEditingController stockController;
   
-  File? _image;
+  Uint8List? _imageBytes;
+  String? _imageName;
   bool _isLoading = false;
 
   @override
@@ -44,7 +45,11 @@ class _ItemFormPageState extends State<ItemFormPage> {
       final picker = ImagePicker();
       final xfile = await picker.pickImage(source: ImageSource.gallery);
       if (xfile != null) {
-        setState(() => _image = File(xfile.path));
+        final bytes = await xfile.readAsBytes();
+        setState(() {
+          _imageBytes = bytes;
+          _imageName = xfile.name;
+        });
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -71,7 +76,8 @@ class _ItemFormPageState extends State<ItemFormPage> {
           name,
           location,
           stock,
-          _image,
+          _imageBytes,
+          _imageName,
         );
       } else {
         // Update existing item
@@ -80,7 +86,8 @@ class _ItemFormPageState extends State<ItemFormPage> {
           name,
           location,
           stock,
-          _image,
+          _imageBytes,
+          _imageName,
         );
       }
 
@@ -133,8 +140,8 @@ class _ItemFormPageState extends State<ItemFormPage> {
                             border: Border.all(color: Colors.grey),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: _image != null
-                              ? Image.file(_image!, fit: BoxFit.cover)
+                          child: _imageBytes != null
+                              ? Image.memory(_imageBytes!, fit: BoxFit.cover)
                               : widget.item?.photoUrl.isNotEmpty == true
                                   ? Image.network(
                                       widget.item!.photoUrl,
