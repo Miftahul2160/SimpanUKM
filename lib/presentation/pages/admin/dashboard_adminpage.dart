@@ -28,14 +28,28 @@ class _DashboardAdminPageState extends State<DashboardAdminPage> {
   }
 
   Future<void> loadDashboard() async {
-    final itemSummary = await itemService.getItemSummary();
-    final pending = await borrowService.getPendingBorrows();
+    try {
+      final itemSummary = await itemService.getItemSummary();
+      final pending = await borrowService.getPendingBorrows();
 
-    setState(() {
-      summary = itemSummary;
-      pendingList = pending;
-      isLoading = false;
-    });
+      setState(() {
+        summary = {
+          'total': itemSummary['total'] ?? 0,
+          'borrowed': itemSummary['borrowed'] ?? 0,
+          'available': itemSummary['available'] ?? 0,
+        };
+        pendingList = pending;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading dashboard: $e");
+      setState(() => isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error loading dashboard: $e")),
+        );
+      }
+    }
   }
 
   @override

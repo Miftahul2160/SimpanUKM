@@ -29,16 +29,29 @@ class _DashboardUserPageState extends State<DashboardUserPage> {
   }
 
   Future<void> loadDashboard() async {
-    final itemSummary = await itemService.getItemSummary();
-    final borrows = await borrowService.getUserBorrows(widget.userId);
+    try {
+      final itemSummary = await itemService.getItemSummary();
+      final borrows = await borrowService.getUserBorrows(widget.userId);
 
-    setState(() {
-      summary = itemSummary;
-      activeBorrows = borrows
-          .where((b) => b.status == "approved")
-          .toList();
-      isLoading = false;
-    });
+      setState(() {
+        summary = {
+          'total': itemSummary['total'] ?? 0,
+          'available': itemSummary['available'] ?? 0,
+        };
+        activeBorrows = borrows
+            .where((b) => b.status.toLowerCase() == "approved")
+            .toList();
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading dashboard: $e");
+      setState(() => isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error loading dashboard: $e")),
+        );
+      }
+    }
   }
 
   @override
@@ -110,7 +123,7 @@ class _DashboardUserPageState extends State<DashboardUserPage> {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.pushNamed(context, "/items");
+                            Navigator.pushNamed(context, "/borrow_request");
                           },
                           icon: const Icon(Icons.add_box),
                           label: const Text("Pinjam Barang"),
