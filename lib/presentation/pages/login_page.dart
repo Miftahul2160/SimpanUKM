@@ -45,10 +45,8 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => UserNavigationPage(
-                userId: userId,
-                userData: res,
-              ),
+              builder: (context) =>
+                  UserNavigationPage(userId: userId, userData: res),
             ),
           );
         }
@@ -59,9 +57,9 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
@@ -79,11 +77,13 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Image(
-                    image: AssetImage("assets/images/logo_full.png"),
-                    // width: 150,
-                    height: 150,
+                  Center(
+                    child: Image.asset(
+                      "assets/images/logo_full.png",
+                      height: 150,
+                    ),
                   ),
+                  
                   SizedBox(height: 10),
                   Text(
                     'Selamat datang di aplikasi SimpanUKM',
