@@ -45,10 +45,8 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => UserNavigationPage(
-                userId: userId,
-                userData: res,
-              ),
+              builder: (context) =>
+                  UserNavigationPage(userId: userId, userData: res),
             ),
           );
         }
@@ -59,9 +57,9 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
@@ -79,11 +77,20 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+<<<<<<< HEAD
                   Image(
                     image: AssetImage("assets/images/logo.png"),
                     // width: 150,
                     height: 150,
+=======
+                  Center(
+                    child: Image.asset(
+                      "assets/images/logo_full.png",
+                      height: 180,
+                    ),
+>>>>>>> a2f3f131284b96dce193bf8e13e10351bbaf0fd4
                   ),
+
                   SizedBox(height: 10),
                   Text(
                     'Selamat datang di aplikasi SimpanUKM',
@@ -105,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Masukkan NIM/No Handphone';
+                        return 'Masukkan NIM';
                       } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
                         return 'Harus berupa angka';
                       }
