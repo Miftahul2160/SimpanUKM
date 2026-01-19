@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/borrow.dart';
-import '../models/borrow_history.dart';
 
 class BorrowService {
   static const String baseUrl = "http://127.0.0.1:8000/api";
