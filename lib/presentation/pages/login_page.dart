@@ -80,10 +80,10 @@ class _LoginPageState extends State<LoginPage> {
                   Center(
                     child: Image.asset(
                       "assets/images/logo_full.png",
-                      height: 150,
+                      height: 180,
                     ),
                   ),
-                  
+
                   SizedBox(height: 10),
                   Text(
                     'Selamat datang di aplikasi SimpanUKM',
