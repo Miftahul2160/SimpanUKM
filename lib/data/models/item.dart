@@ -17,7 +17,7 @@ class Item {
     return Item(
       id: json['id'].toString(),
       name: json['name'],
-      stock: json['quantity_total'],
+      stock: json['stock'],
       location: json['location'],
       photoUrl: json['photo_url'],
     );
@@ -27,7 +27,7 @@ class Item {
     return {
       "id": id,
       "name": name,
-      "quantity_total": stock,
+      "stock": stock,
       "location": location,
       "photo_url": photoUrl,
     };
