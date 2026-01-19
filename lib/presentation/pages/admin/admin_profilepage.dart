@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:simpanukm_uas_pam/data/services/authen_service.dart';
+import 'package:simpanukm_uas_pam/data/services/session_service.dart';
 import 'package:simpanukm_uas_pam/presentation/pages/login_page.dart';
 
 class AdminProfilePage extends StatefulWidget {
@@ -16,25 +17,27 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   Future<void> _logout() async {
     setState(() => _isLoading = true);
     try {
-      final success = await AuthService.logout();
+      // Call logout API
+      final response = await AuthService.logout();
+      
+      // Clear session data
+      await SessionService.clearSession();
       setState(() => _isLoading = false);
 
-      if (success) {
+      if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const LoginPage()),
           (route) => false,
         );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Logout gagal")),
-        );
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:simpanukm_uas_pam/data/services/api_service.dart';
+import 'package:simpanukm_uas_pam/data/services/session_service.dart';
 
 class AuthService {
   static const String baseUrl = "http://127.0.0.1:8000/api";
@@ -40,16 +41,18 @@ class AuthService {
     }
   }
 
-  static Future<bool> logout() async {
-    try {
-      final res = await http.post(
-        Uri.parse("$baseUrl/auth/logout"),
-        headers: {"Content-Type": "application/json"},
-      );
-      return res.statusCode == 200;
-    } catch (e) {
-      print("Logout error: $e");
-      return false;
-    }
-  }
+  static Future<Map<String, dynamic>> logout() async {
+  final token = await SessionService.getToken();
+
+  final res = await http.post(
+    Uri.parse("$baseUrl/auth/logout"),
+    headers: {
+      "Authorization": "Bearer $token",
+      "Accept": "application/json",
+    },
+  );
+
+  return jsonDecode(res.body);
+}
+
 }
