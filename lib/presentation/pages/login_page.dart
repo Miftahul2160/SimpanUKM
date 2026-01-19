@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:simpanukm_uas_pam/data/services/authen_service.dart';
 import 'package:simpanukm_uas_pam/presentation/pages/admin/admin_navigationpage.dart';
-import 'package:simpanukm_uas_pam/presentation/pages/admin/dashboard_adminpage.dart';
 import 'package:simpanukm_uas_pam/presentation/pages/register_page.dart';
-import 'package:simpanukm_uas_pam/presentation/pages/user/dashboard_userpage.dart';
 import 'package:simpanukm_uas_pam/presentation/pages/user/user_navigationpage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -107,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Masukkan NIM/No Handphone';
+                        return 'Masukkan NIM';
                       } else if (!RegExp(r'^[0-9]+$').hasMatch(value)) {
                         return 'Harus berupa angka';
                       }
