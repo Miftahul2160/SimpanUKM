@@ -1,21 +1,18 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:simpanukm_uas_pam/data/services/borrow_service.dart';
 
 class BorrowHistoryPage extends StatefulWidget {
   const BorrowHistoryPage({super.key});
 
   @override
-  State<BorrowHistoryPage> createState() =>
-      _BorrowHistoryPageState();
+  State<BorrowHistoryPage> createState() => _BorrowHistoryPageState();
 }
 
 class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
+  final BorrowService _borrowService = BorrowService();
   List<dynamic> borrowHistory = [];
   bool isLoading = true;
   String selectedStatus = "all";
-
-  static const baseUrl = "http://127.0.0.1:8000/api"; 
 
   @override
   void initState() {
@@ -24,40 +21,41 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
   }
 
   Future<void> fetchBorrowHistory() async {
+    setState(() => isLoading = true);
     try {
-      final response = await http.get(Uri.parse("$baseUrl/borrows/history"));
-
-      if (response.statusCode == 200) {
-        setState(() {
-          borrowHistory = jsonDecode(response.body);
-          isLoading = false;
-        });
-      } else {
-        throw Exception("Gagal load history");
-      }
+      final result = await _borrowService.getBorrowHistory();
+      setState(() {
+        borrowHistory = result;
+        isLoading = false;
+      });
     } catch (e) {
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading history: $e")),
+      );
     }
   }
 
   Color statusColor(String status) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "approved":
         return Colors.green;
       case "rejected":
         return Colors.red;
       case "returned":
         return Colors.blue;
-      default:
+      case "pending":
         return Colors.orange;
+      default:
+        return Colors.grey;
     }
   }
 
   List<dynamic> get filteredHistory {
     if (selectedStatus == "all") return borrowHistory;
-    return borrowHistory.where((e) => e['status'] == selectedStatus).toList();
+    return borrowHistory
+        .where((e) => (e['status'] ?? '').toLowerCase() == selectedStatus.toLowerCase())
+        .toList();
   }
 
   @override
@@ -68,7 +66,7 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                // FILTER STATUS
+                // Filter status
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -88,31 +86,34 @@ class _BorrowHistoryPageState extends State<BorrowHistoryPage> {
                         .toList(),
                   ),
                 ),
-
                 const Divider(),
 
-                // LIST HISTORY
+                // List history
                 Expanded(
                   child: filteredHistory.isEmpty
                       ? const Center(child: Text("Belum ada data"))
-                      : ListView.builder(
-                          itemCount: filteredHistory.length,
-                          itemBuilder: (context, index) {
-                            final data = filteredHistory[index];
+                      : RefreshIndicator(
+                          onRefresh: fetchBorrowHistory,
+                          child: ListView.builder(
+                            itemCount: filteredHistory.length,
+                            itemBuilder: (context, index) {
+                              final data = filteredHistory[index];
 
-                            return Card(
-                              margin: const EdgeInsets.all(8),
-                              child: ListTile(
-                                title: Text(data['item_name']),
-                                subtitle: Text(
-                                    "${data['user_name']} • ${data['borrow_date']} - ${data['return_date']}"),
-                                trailing: Chip(
-                                  label: Text(data['status']),
-                                  backgroundColor: statusColor(data['status']),
+                              return Card(
+                                margin: const EdgeInsets.all(8),
+                                child: ListTile(
+                                  title: Text(data['item_name'] ?? "Item ${data['item_id']}"),
+                                  subtitle: Text(
+                                    "${data['user_name'] ?? "User ${data['user_id']}"}\n${data['borrow_date'] ?? 'N/A'} - ${data['return_date'] ?? 'N/A'}",
+                                  ),
+                                  trailing: Chip(
+                                    label: Text((data['status'] ?? 'unknown').toUpperCase()),
+                                    backgroundColor: statusColor(data['status'] ?? ''),
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                 )
               ],

@@ -1,56 +1,145 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
-// import 'package:simpanukm_uas_pam/data/services/http_service.dart';
+import 'package:simpanukm_uas_pam/data/services/api_service.dart';
 import '../models/item.dart';
 
 class ItemService {
-  // final HttpService httpService;
   static const String baseUrl = "http://127.0.0.1:8000/api";
-  Future<List<Item>> getItems() async {
-    final response = await http.get(Uri.parse("$baseUrl/items"));
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return List.from(data['data'])
-          .map((e) => Item.fromJson(e))
-          .toList();
+  Future<List<Item>> getItems() async {
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/items"),
+        headers: {"Content-Type": "application/json"},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['data'] != null) {
+          return List.from(data['data'])
+              .map((e) => Item.fromJson(e))
+              .toList();
+        }
+        return [];
+      } else {
+        throw Exception("Failed to load items: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error loading items: $e");
+      return [];
     }
-    return [];
   }
 
   Future<bool> createItem(Item item) async {
-    final response = await http.post(
-      Uri.parse("$baseUrl/items"),
-      body: item.toJson(),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/items"),
+        body: jsonEncode(item.toJson()),
+        headers: {"Content-Type": "application/json"},
+      );
 
-    return response.statusCode == 201;
+      return response.statusCode == 201;
+    } catch (e) {
+      print("Error creating item: $e");
+      return false;
+    }
   }
 
   Future<bool> updateItem(Item item) async {
-    final response = await http.put(
-      Uri.parse("$baseUrl/items/${item.id}"),
-      body: item.toJson(),
-    );
+    try {
+      final response = await http.put(
+        Uri.parse("$baseUrl/items/${item.id}"),
+        body: jsonEncode(item.toJson()),
+        headers: {"Content-Type": "application/json"},
+      );
 
-    return response.statusCode == 200;
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Error updating item: $e");
+      return false;
+    }
   }
 
-  Future<bool> deleteItem(int id) async {
-    final response = await http.delete(
-      Uri.parse("$baseUrl/items/$id"),
-    );
+  Future<bool> deleteItem(String id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse("$baseUrl/items/$id"),
+        headers: {"Content-Type": "application/json"},
+      );
 
-    return response.statusCode == 200;
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Error deleting item: $e");
+      return false;
+    }
   }
 
   Future<Map<String, dynamic>> getItemSummary() async {
-  final response = await http.get(Uri.parse("$baseUrl/items/summary"));
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/items/summary"),
+        headers: {"Content-Type": "application/json"},
+      );
 
-  if (response.statusCode == 200) {
-    return jsonDecode(response.body)['data'];
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['data'] ?? {};
+      }
+      return {};
+    } catch (e) {
+      print("Error loading summary: $e");
+      return {};
+    }
   }
 
-  return {};
-}
+  Future<bool> createItemWithImage(
+    String name,
+    String location,
+    int stock,
+    File? image,
+  ) async {
+    try {
+      final response = await ApiService.multipart(
+        "items",
+        {
+          "name": name,
+          "location": location,
+          "quantity_total": stock.toString(),
+        },
+        image,
+      );
+
+      return response != null;
+    } catch (e) {
+      print("Error creating item with image: $e");
+      return false;
+    }
+  }
+
+  Future<bool> updateItemWithImage(
+    String id,
+    String name,
+    String location,
+    int stock,
+    File? image,
+  ) async {
+    try {
+      final response = await ApiService.multipart(
+        "items/$id",
+        {
+          "name": name,
+          "location": location,
+          "quantity_total": stock.toString(),
+        },
+        image,
+        method: "PUT",
+      );
+
+      return response != null;
+    } catch (e) {
+      print("Error updating item with image: $e");
+      return false;
+    }
+  }
 }

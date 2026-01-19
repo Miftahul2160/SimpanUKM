@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:simpanukm_uas_pam/data/models/borrow.dart';
+import 'package:simpanukm_uas_pam/data/services/borrow_service.dart';
 
 class BorrowApprovePage extends StatefulWidget {
   const BorrowApprovePage({super.key});
@@ -10,10 +10,9 @@ class BorrowApprovePage extends StatefulWidget {
 }
 
 class _BorrowApprovePageState extends State<BorrowApprovePage> {
-  List<dynamic> pendingBorrows = [];
+  final BorrowService _borrowService = BorrowService();
+  List<BorrowItem> pendingBorrows = [];
   bool isLoading = true;
-
-  static const baseUrl = "http://127.0.0.1:8000/api"; 
 
   @override
   void initState() {
@@ -22,38 +21,45 @@ class _BorrowApprovePageState extends State<BorrowApprovePage> {
   }
 
   Future<void> fetchPendingBorrows() async {
+    setState(() => isLoading = true);
     try {
-      final response = await http.get(Uri.parse("$baseUrl/borrows/pending"));
-
-      if (response.statusCode == 200) {
-        setState(() {
-          pendingBorrows = jsonDecode(response.body);
-          isLoading = false;
-        });
-      } else {
-        throw Exception("Gagal load data");
-      }
+      final result = await _borrowService.getPendingBorrows();
+      setState(() {
+        pendingBorrows = result;
+        isLoading = false;
+      });
     } catch (e) {
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading borrows: $e")),
+      );
     }
   }
 
-  Future<void> updateStatus(int id, String action) async {
+  Future<void> updateStatus(int id, bool approve) async {
     try {
-      final response = await http.put(
-        Uri.parse("$baseUrl/borrows/$id/$action"),
-      );
+      final success = approve
+          ? await _borrowService.approveBorrow(id)
+          : await _borrowService.rejectBorrow(id);
 
-      if (response.statusCode == 200) {
+      if (success) {
         fetchPendingBorrows();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              approve ? "Pengajuan disetujui" : "Pengajuan ditolak",
+            ),
+          ),
+        );
       } else {
-        throw Exception("Gagal update status");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Gagal mengupdate status")),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
     }
   }
 
@@ -64,38 +70,38 @@ class _BorrowApprovePageState extends State<BorrowApprovePage> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : pendingBorrows.isEmpty
-              ? const Center(child: Text("Tidak ada pengajuan"))
-              : ListView.builder(
-                  itemCount: pendingBorrows.length,
-                  itemBuilder: (context, index) {
-                    final data = pendingBorrows[index];
+              ? const Center(child: Text("Tidak ada pengajuan pending"))
+              : RefreshIndicator(
+                  onRefresh: fetchPendingBorrows,
+                  child: ListView.builder(
+                    itemCount: pendingBorrows.length,
+                    itemBuilder: (context, index) {
+                      final borrow = pendingBorrows[index];
 
-                    return Card(
-                      margin: const EdgeInsets.all(8),
-                      child: ListTile(
-                        title: Text(data['item_name']),
-                        subtitle: Text(
-                          "${data['user_name']} • ${data['borrow_date']} - ${data['return_date']}",
+                      return Card(
+                        margin: const EdgeInsets.all(8),
+                        child: ListTile(
+                          title: Text("Item ${borrow.itemId}"),
+                          subtitle: Text(
+                            "User ${borrow.userId}\n${borrow.borrowDate} - ${borrow.returnDate}",
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                onPressed: () => updateStatus(borrow.id, true),
+                                icon: const Icon(Icons.check_circle, color: Colors.green),
+                              ),
+                              IconButton(
+                                onPressed: () => updateStatus(borrow.id, false),
+                                icon: const Icon(Icons.cancel, color: Colors.red),
+                              ),
+                            ],
+                          ),
                         ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              onPressed: () =>
-                                  updateStatus(data['id'], "approve"),
-                              icon: const Icon(Icons.check_circle,
-                                  color: Colors.green),
-                            ),
-                            IconButton(
-                              onPressed: () =>
-                                  updateStatus(data['id'], "reject"),
-                              icon: const Icon(Icons.cancel, color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
     );
   }

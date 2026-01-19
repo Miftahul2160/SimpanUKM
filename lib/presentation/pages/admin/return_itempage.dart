@@ -1,6 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:simpanukm_uas_pam/data/services/borrow_service.dart';
 
 class ReturnItemPage extends StatefulWidget {
   const ReturnItemPage({super.key});
@@ -10,10 +9,9 @@ class ReturnItemPage extends StatefulWidget {
 }
 
 class _ReturnItemPageState extends State<ReturnItemPage> {
+  final BorrowService _borrowService = BorrowService();
   List<dynamic> approvedBorrows = [];
   bool isLoading = true;
-
-  final String baseUrl = "http://10.0.2.2:8000/api";
 
   @override
   void initState() {
@@ -22,36 +20,39 @@ class _ReturnItemPageState extends State<ReturnItemPage> {
   }
 
   Future<void> fetchApprovedBorrows() async {
+    setState(() => isLoading = true);
     try {
-      final response = await http.get(Uri.parse("$baseUrl/borrows/approved"));
-
-      if (response.statusCode == 200) {
-        setState(() {
-          approvedBorrows = jsonDecode(response.body);
-          isLoading = false;
-        });
-      } else {
-        throw Exception("Gagal load data");
-      }
+      final result = await _borrowService.getApprovedBorrows();
+      setState(() {
+        approvedBorrows = result;
+        isLoading = false;
+      });
     } catch (e) {
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading data: $e")),
+      );
     }
   }
 
   Future<void> markAsReturned(int id) async {
     try {
-      final response = await http.put(Uri.parse("$baseUrl/borrows/$id/return"));
+      final success = await _borrowService.returnBorrow(id);
 
-      if (response.statusCode == 200) {
+      if (success) {
         fetchApprovedBorrows();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Barang berhasil dikembalikan")),
+        );
       } else {
-        throw Exception("Gagal update status");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Gagal mengembalikan barang")),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
     }
   }
 
@@ -63,24 +64,31 @@ class _ReturnItemPageState extends State<ReturnItemPage> {
           ? const Center(child: CircularProgressIndicator())
           : approvedBorrows.isEmpty
               ? const Center(child: Text("Tidak ada barang dipinjam"))
-              : ListView.builder(
-                  itemCount: approvedBorrows.length,
-                  itemBuilder: (context, index) {
-                    final data = approvedBorrows[index];
+              : RefreshIndicator(
+                  onRefresh: fetchApprovedBorrows,
+                  child: ListView.builder(
+                    itemCount: approvedBorrows.length,
+                    itemBuilder: (context, index) {
+                      final data = approvedBorrows[index];
 
-                    return Card(
-                      margin: const EdgeInsets.all(8),
-                      child: ListTile(
-                        title: Text(data['item_name']),
-                        subtitle: Text(
-                            "${data['user_name']} • ${data['borrow_date']} - ${data['return_date']}"),
-                        trailing: ElevatedButton(
-                          onPressed: () => markAsReturned(data['id']),
-                          child: const Text("Returned"),
+                      return Card(
+                        margin: const EdgeInsets.all(8),
+                        child: ListTile(
+                          title: Text(data['item_name'] ?? "Item ${data['item_id']}"),
+                          subtitle: Text(
+                            "${data['user_name'] ?? "User ${data['user_id']}"}\n${data['borrow_date'] ?? 'N/A'} - ${data['return_date'] ?? 'N/A'}",
+                          ),
+                          trailing: ElevatedButton(
+                            onPressed: () => markAsReturned(data['id']),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                            ),
+                            child: const Text("Kembalikan"),
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
     );
   }

@@ -41,29 +41,45 @@ class _BorrowRequestPageState extends State<BorrowRequestPage> {
 
   Future<void> submitBorrow() async {
     if (selectedItem == null || borrowDate == null || returnDate == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Lengkapi form")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Lengkapi semua form")),
+      );
       return;
     }
 
-    final borrow = BorrowItem(
-      id: 0,
-      userId: widget.userId,
-      itemId: int.parse(selectedItem!.id),
-      status: "pending",
-      borrowDate: borrowDate!.toIso8601String(),
-      returnDate: returnDate!.toIso8601String(),
-    );
+    if (returnDate!.isBefore(borrowDate!)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Tanggal kembali harus setelah tanggal pinjam")),
+      );
+      return;
+    }
 
-    final success = await borrowService.requestBorrow(borrow);
+    try {
+      final borrow = BorrowItem(
+        id: 0,
+        userId: widget.userId,
+        itemId: int.parse(selectedItem!.id),
+        status: "pending",
+        borrowDate: borrowDate!.toIso8601String().split('T')[0],
+        returnDate: returnDate!.toIso8601String().split('T')[0],
+      );
 
-    if (success) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Pengajuan dikirim")));
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Gagal mengirim")));
+      final success = await borrowService.requestBorrow(borrow);
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Pengajuan peminjaman berhasil dikirim")),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Gagal mengirim pengajuan")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
     }
   }
 
@@ -101,13 +117,13 @@ class _BorrowRequestPageState extends State<BorrowRequestPage> {
                     items: items
                         .map((item) => DropdownMenuItem(
                               value: item,
-                              child: Text("${item.name} (stok: ${item.quantityTotal})"),
+                              child: Text("${item.name} (stok: ${item.stock})"),
                             ))
                         .toList(),
                     onChanged: (value) {
                       setState(() {
                         selectedItem = value;
-                        if (selectedItem != null && selectedItem!.quantityTotal == 0) {
+                        if (selectedItem != null && selectedItem!.stock == 0) {
                           selectedItem = null;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("Barang tidak tersedia")),

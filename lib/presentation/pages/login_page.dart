@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:simpanukm_uas_pam/data/services/authen_service.dart';
+import 'package:simpanukm_uas_pam/presentation/pages/admin/admin_navigationpage.dart';
 import 'package:simpanukm_uas_pam/presentation/pages/admin/dashboard_adminpage.dart';
 import 'package:simpanukm_uas_pam/presentation/pages/register_page.dart';
 import 'package:simpanukm_uas_pam/presentation/pages/user/dashboard_userpage.dart';
+import 'package:simpanukm_uas_pam/presentation/pages/user/user_navigationpage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,31 +24,46 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
 
-    final res = await AuthService.login({
-      "nim": _nimController.text,
-      "password": _passwordController.text,
-    });
+    try {
+      final res = await AuthService.login({
+        "nim": _nimController.text,
+        "password": _passwordController.text,
+      });
 
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    if (res['success'] == true) {
-      if (res['role'] == 'admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const DashboardAdminPage()),
-        );
+      if (res['success'] == true) {
+        final userId = res['user_id'] ?? res['id'];
+        final role = res['role'] ?? "user";
+
+        if (role == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AdminNavigationPage(adminData: res),
+            ),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UserNavigationPage(
+                userId: userId,
+                userData: res,
+              ),
+            ),
+          );
+        }
       } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DashboardUserPage(userId: res['user_id']),
-          ),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? "Login gagal")),
         );
       }
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(res['message'] ?? "Login gagal")));
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
     }
   }
 

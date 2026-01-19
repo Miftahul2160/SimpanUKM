@@ -26,27 +26,34 @@ class _RegisterPageState extends State<RegisterPage> {
       _isLoading = true;
     });
 
-    final payload = {
-      "name": _nameController.text,
-      "nim": _nimController.text,
-      "email": _emailController.text,
-      "no_hp": _noHpController.text,
-      "password": _passwordController.text,
-      "role": "user",
-    };
+    try {
+      final payload = {
+        "name": _nameController.text,
+        "nim": _nimController.text,
+        "email": _emailController.text,
+        "phone": _noHpController.text,
+        "password": _passwordController.text,
+        "role": "user",
+      };
 
-    final res = await AuthService.register(payload);
+      final res = await AuthService.register(payload);
 
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    if (res['success'] == true) {
-      Navigator.pop(context);
+      if (res['success'] == true) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? "Registrasi berhasil")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? "Registrasi gagal")),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(res['message'] ?? "Registrasi berhasil")),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(res['message'] ?? "Registrasi gagal")),
+        SnackBar(content: Text("Error: $e")),
       );
     }
   }
