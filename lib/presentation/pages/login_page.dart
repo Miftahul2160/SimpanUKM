@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:simpanukm_uas_pam/data/services/authen_service.dart';
 import 'package:simpanukm_uas_pam/presentation/pages/admin/admin_navigationpage.dart';
-import 'package:simpanukm_uas_pam/presentation/pages/admin/dashboard_adminpage.dart';
 import 'package:simpanukm_uas_pam/presentation/pages/register_page.dart';
-import 'package:simpanukm_uas_pam/presentation/pages/user/dashboard_userpage.dart';
 import 'package:simpanukm_uas_pam/presentation/pages/user/user_navigationpage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -82,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Image(
-                    image: AssetImage("assets/images/logo_full.png"),
+                    image: AssetImage("assets/images/logo.png"),
                     // width: 150,
                     height: 150,
                   ),
